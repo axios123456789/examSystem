@@ -12,9 +12,9 @@ public interface UserService {
     //public List<User> selectUser();
     PageInfo<User> selectUser(UserQuery userQuery);
 
-    public void addUser(User user);
+    void addUser(User user);
 
-    public void delUser(int id);
+    void delUser(int id);
 
     List<UserResp> login(String username, String password);
 }

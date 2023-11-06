@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.examsystem.mapper.ScoredetailMapper">
+    <insert id="savePaperTestRecord">
+        insert into t_scoredetail(stuId,paperId,questionId,questionTitle,q_typeid,
+                                  questionAnswer,questionScore,correntAnswer,correntScore)
+        values
+        <foreach collection="scoredetails" item="item" separator=",">
+            (#{item.stuId}, #{item.paperId}, #{item.questionId}, #{item.questionTitle}, #{item.q_typeid},
+              #{item.questionAnswer}, #{item.questionScore}, #{item.correntAnswer}, #{item.correntScore})
+        </foreach>
+    </insert>
+
+    <select id="queryScore" resultType="com.example.examsystem.resp.StuScoreResp">
+        select st.id                stuId,
+               st.username,
+               p.id                 paperId,
+               p.name,
+               sum(sc.correntScore) totalScore
+        from t_scoredetail sc
+                 join t_paper p on sc.paperId = p.id
+                 join t_student st on sc.stuId = st.id
+        where st.id = #{stuId}
+        group by sc.paperId
+    </select>
+
+    <select id="selectReadPaper" resultType="com.example.examsystem.resp.ReadPaperResp">
+        select sc.id,
+               st.username,
+               p.name,
+               sc.questionTitle,
+               sc.questionAnswer,
+               sc.questionScore,
+               sc.correntAnswer,
+               sc.correntScore
+        from t_scoredetail sc
+                 join t_paper p on sc.paperId = p.id
+                 join t_student st on sc.stuId = st.id
+    </select>
+</mapper>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.examsystem.mapper.PaperMapper">
+<!--    组卷时查询将试卷id和问题id添加到试卷问题联立表中-->
+    <insert id="zujuan">
+        insert into t_paper_question(paperId, questionId) values
+        <foreach collection="collect" item="item" separator=",">
+            (#{item.paperId},#{item.questionId})
+        </foreach>
+    </insert>
+
+<!--    查询试卷信息-->
+    <select id="selectPaper" resultType="com.example.examsystem.pojo.Paper">
+        select * from t_paper /*inner join t_level on t_paper.levelid = t_level.id*/
+        <where>
+            <if test="levelid != null and levelid != ''">
+                and levelid = #{levelid}
+            </if>
+            <if test="name != null and name != ''">
+                and `name` like concat('%', #{name} ,'%')
+            </if>
+        </where>
+
+        order by createTime desc
+    </select>
+    
+<!--    预览试卷时查询试卷信息 问题信息 选择题选项信息-->
+    <select id="paperView" resultMap="paperMap">
+        select p.id, p.name, p.startTime, p.endTime,
+        q.id qid, q.questionTitle, q.questionAnswer, q.grade, q.q_typeid,
+        qx.id qxid, qx.optionA, qx.optionB, qx.optionC, qx.optionD, qx.questionId
+        from t_paper p
+        join t_paper_question pq on p.id = pq.paperId
+        join t_questionbank q on pq.questionId = q.id
+        left join t_xzt_options qx on q.id = qx.questionId
+        where p.id = #{paperId}
+        order by q_typeid
+    </select>
+<!--    resultMap用来处理表字段与类字段不同的问题-->
+    <resultMap id="paperMap" type="com.example.examsystem.pojo.Paper">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="startTime" property="startTime"></result>
+        <result column="endTime" property="endTime"></result>
+
+<!--        一对多查询-->
+        <collection property="questionList" javaType="com.example.examsystem.pojo.Question">
+            <id column="qid" property="id"></id>
+            <result column="questionTitle" property="questionTitle"></result>
+            <result column="questionAnswer" property="questionAnswer"></result>
+            <result column="q_typeid" property="q_typeid"></result>
+            <result column="grade" property="grade"></result>
+
+<!--            一对一查询-->
+            <association property="questionxztOptions" javaType="com.example.examsystem.pojo.QuestionxztOptions">
+                <id column="qxid" property="id"></id>
+                <result column="optionA" property="optionA"></result>
+                <result column="optionB" property="optionB"></result>
+                <result column="optionC" property="optionC"></result>
+                <result column="optionD" property="optionD"></result>
+                <result column="questionId" property="questionId"></result>
+            </association>
+        </collection>
+    </resultMap>
+</mapper>

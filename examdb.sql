@@ -1,4 +1,3 @@
-drop database examdb;
 create database examdb;
 
 CREATE TABLE `t_student`  (
